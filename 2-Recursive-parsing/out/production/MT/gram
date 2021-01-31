@@ -1,0 +1,33 @@
+Description:
+S  - start
+T  - type name
+F  - first appear of nested
+N  - nested
+E  - end or continue
+A  - another var
+
+Grammar:
+//S -> ε
+S -> var name : array < T > ; A
+
+A -> ε
+A -> S
+
+T -> name F
+
+F -> ε
+F -> < N >
+
+N -> T E
+E -> ε
+E -> , N
+
+var x: Array<Map<Int, Int>>;
+
+First and Follow sets:
+    First:      Follow:
+S   ε var    |  $
+T   name     |  >
+F   ε <      |  > ,
+N   name     |  >
+E   ε ,      |  >

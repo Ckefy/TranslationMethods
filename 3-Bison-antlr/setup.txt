@@ -1,0 +1,10 @@
+SET CLASSPATH=.;C:\Javalib\antlr-4.8-complete.jar;%CLASSPATH%
+doskey antlr4=java org.antlr.v4.Tool $*
+doskey grun =java org.antlr.v4.gui.TestRig $*
+cd desktop
+cd NEWMT
+cd src
+antlr4 -o kek Hello.g4
+javac Hello*.java
+::Тут визуализация идет, после ввода надо сделать контрл + Z
+grun Hello root -gui

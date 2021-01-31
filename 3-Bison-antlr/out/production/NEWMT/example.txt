@@ -1,0 +1,12 @@
+gcd :: Int -> Int -> Int
+gcd arg1 arg2 | (arg2 == 0) = arg1
+gcd arg1 arg2 | (arg2 != 0) = gcd (arg2, arg1 % arg2)
+
+isPrime :: Int -> Bool
+isPrime arg1 | (arg1 == 1) = False
+isPrime arg1 | (arg1 != 1) = helpPrime(arg1, 2)
+
+helpPrime :: Int -> Int -> Bool
+helpPrime arg1 arg2 | (arg1 <= arg2) = True
+helpPrime arg1 arg2 | (arg1 % arg2 == 0) = False
+helpPrime arg1 arg2 | (arg1 % arg2 != 0) = helpPrime (arg1, arg2 + 1)

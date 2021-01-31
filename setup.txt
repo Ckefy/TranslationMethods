@@ -1,0 +1,10 @@
+SET CLASSPATH=.;C:\Javalib\antlr-4.8-complete.jar;%CLASSPATH%
+doskey antlr4=java org.antlr.v4.Tool $*
+doskey grun =java org.antlr.v4.gui.TestRig $*
+cd desktop
+cd Javalib
+cd kek
+antlr4 Hello.g4
+javac Hello*.java
+grun Hello r -gui
+hello parrt

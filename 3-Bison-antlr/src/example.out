@@ -1,0 +1,11 @@
+function fac(arg1: Int, arg2: Int, arg3: Int): Int;
+begin
+if (arg1 == 0 && arg2 == 1 && arg3 == 2):
+         return 5*2*3
+if (z==0) then:
+         return 3*n*m
+if (e<5) then:
+         return 3*n*m
+if (arg1 == 2 && arg2 == 5 && arg3 == 2) then:
+         return 10-1+2
+end;
