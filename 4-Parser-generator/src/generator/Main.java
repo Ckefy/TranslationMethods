@@ -8,8 +8,6 @@ import org.antlr.v4.runtime.TokenStream;
 
 public class Main {
     public static void main(String[] args) {
-        // /home/polinb/IdeaProjects/MPP/ParserGenerator/CalculatorGrammar
-        // /home/polinb/IdeaProjects/MPP/ParserGenerator/FunctionInPascalGrammar
         try {
             GrammarForGenerateLexer lexer = new GrammarForGenerateLexer(CharStreams.fromFileName(args[0]));
             TokenStream tokenStream = new CommonTokenStream(lexer);
