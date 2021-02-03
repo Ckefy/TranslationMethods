@@ -2,9 +2,8 @@ SET CLASSPATH=.;C:\Javalib\antlr-4.8-complete.jar;%CLASSPATH%
 doskey antlr4=java org.antlr.v4.Tool $*
 doskey grun =java org.antlr.v4.gui.TestRig $*
 cd desktop
-cd LASTMT
-cd gen/antlr
-antlr4 GrammarForGenerate.g4
-javac GrammarForGenerate*.java
-::Тут визуализация идет, после ввода надо сделать контрл + Z
-grun Hello root -gui
+cd mt4
+cd src/gengram
+antlr4 -o .. GramParseGrams.g4
+cd ..
+javac GramParseGrams*.java

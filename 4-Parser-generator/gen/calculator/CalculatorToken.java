@@ -1,11 +1,13 @@
 package calculator;
 
 public enum CalculatorToken {
+	DIV,
 	SPACE,
 	NUMBER,
-	LP,
 	MUL,
-	RP,
+	POW,
+	LBRACKET,
+	RBRACKET,
 	PLUS,
 	MINUS,
 	_END

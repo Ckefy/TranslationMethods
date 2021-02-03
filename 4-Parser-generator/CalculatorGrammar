@@ -5,11 +5,13 @@ import java.lang.StringBuilder;
 }
 
 @tokens {
-LP: "[(]";
-RP: "[)]";
 PLUS: "\\+" ;
 MINUS:  "-" ;
 MUL: "\\*";
+DIV: "\\/";
+POW: "\\^";
+LBRACKET: "\\(";
+RBRACKET: "\\)";
 NUMBER: "[1-9]+[0-9]*|0";
 SPACE: "[ \n\r]+" -> skip;
 }
@@ -17,24 +19,34 @@ SPACE: "[ \n\r]+" -> skip;
 @start = E;
 
 @states {
-E returns [int v]
-    : T #int u = n0.v;# G [u] #res.v = n1.v;#;
-G [int a] returns [int v]
-    : EPS #res.v = a;#
-    | PLUS T #int u = n0.v;# PlusOp[a, u] #int acc = n1.v;# G[acc] #res.v = n2.v;#
-    | MINUS T #int u = n0.v;# MinusOp[a, u] #int acc = n1.v;# G[acc] #res.v = n2.v;#;
-T returns [int v]
-    : F #int u = n0.v;# H[u] #res.v = n1.v;#;
-H [int a] returns [int v]
-    : EPS #res.v = a;#
-    | MUL F #int u = n0.v;# MulOp[a, u] #int acc = n1.v;# H[acc] #res.v = n2.v;#;
-F returns [int v]
-    : NUMBER #res.v = Integer.parseInt(lexicalAnalyzer.getCurrentTokenString());#
-    | MINUS F #res.v = -(n0.v);#
-    | LP E #res.v = n0.v;# RP;
+E returns [int value]
+    : D `int m = n0.value;` H[m] `int u = n1.value;` G [u] `res.value = n2.value;`;
+G [int a] returns [int value]
+    : EPS `res.value = a;`
+    | PLUS T `int u = n0.value;` PlusOp[a, u] `int acc = n1.value;` G[acc] `res.value = n2.value;`
+    | MINUS T `int u = n0.value;` MinusOp[a, u] `int acc = n1.value;` G[acc] `res.value = n2.value;`;
+T returns [int value]
+    : F `int u = n0.value;` H[u] `res.value = n1.value;`;
+H [int a] returns [int value]
+    : EPS `res.value = a;`
+    | MUL D `int u = n0.value;` MulOp[a, u] `int acc = n1.value;` H[acc] `res.value = n2.value;`
+    | DIV D `int u = n0.value;` DivOp[a, u] `int acc = n1.value;` H[acc] `res.value = n2.value;`;
+D returns [int value]
+    : F `int u = n0.value;` R[u] `res.value = n1.value;`;
+R [int a] returns [int value]
+    : EPS `res.value = a;`
+    | POW F `int u = n0.value;` R[u] `int acc = n1.value;` PowOp[a, acc] `res.value = n2.value;`;
 
-PlusOp[int a, int b] returns [int v] : EPS #res.v = a + b;#;
-MinusOp[int a, int b] returns [int v] : EPS #res.v = a - b;#;
-MulOp[int a, int b] returns [int v] : EPS #res.v = a * b;#;
+
+F returns [int value]
+    : NUMBER `res.value = Integer.parseInt(lex.getCurrentTokenString());`
+    | MINUS F `res.value = -(n0.value);`
+    | LBRACKET E `res.value = n0.value;` RBRACKET;
+
+PlusOp[int a, int b] returns [int value] : EPS `res.value = a + b;`;
+MinusOp[int a, int b] returns [int value] : EPS `res.value = a - b;`;
+MulOp[int a, int b] returns [int value] : EPS `res.value = a * b;`;
+DivOp[int a, int b] returns [int value] : EPS `res.value = a / b;`;
+PowOp[int a, int b] returns [int value] : EPS `res.value = (int) Math.pow(a, b);`;
 
 }

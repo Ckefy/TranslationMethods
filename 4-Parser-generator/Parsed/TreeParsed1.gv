@@ -1,0 +1,1 @@
+digraph HelloWorld {1[label="s"];2[label="DECL"];1 -> 2;3[label="NAME"];1 -> 3;4[label="COLON"];1 -> 4;5[label="ARR"];1 -> 5;6[label="LG"];1 -> 6;7[label="t"];1 -> 7;8[label="NAME"];7 -> 8;9[label="f"];7 -> 9;10[label="RG"];1 -> 10;11[label="SEMICOLON"];1 -> 11;}

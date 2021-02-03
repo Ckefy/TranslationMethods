@@ -1,0 +1,4 @@
+digraph HelloWorld {
+  "Hello" -> "World";
+  "Kek" -> "Cheburek";
+}

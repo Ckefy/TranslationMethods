@@ -1,7 +1,7 @@
 package generator;
 
-import generator.subclasses.Rule;
-import generator.subclasses.State;
+import generator.atoms.Rule;
+import generator.atoms.State;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
@@ -19,7 +18,7 @@ public class ParserGenerator {
 
     ParserGenerator(Grammar grammar) throws IOException {
         this.grammar = grammar;
-        Path pathDir = Paths.get("/home/polinb/IdeaProjects/MPP/ParserGenerator");
+        Path pathDir = Paths.get("C:\\Users\\Ckefy\\Desktop\\mt4");
         pathDir = pathDir.resolve("gen").resolve(grammar.grammarName.toLowerCase());
         Files.createDirectories(pathDir);
         String fileName = grammar.grammarName + "Parser.java";
@@ -34,6 +33,13 @@ public class ParserGenerator {
         // header
         sb.append(printString("package " + grammar.grammarName.toLowerCase() + ";\n" +
                 "\n" +
+                "import java.io.BufferedWriter;\n" +
+                "import java.io.File;\n" +
+                "import java.io.IOException;\n" +
+                "import java.nio.charset.StandardCharsets;\n" +
+                "import java.nio.file.Files;\n" +
+                "import java.nio.file.Path;\n" +
+                "import java.nio.file.Paths;\n" +
                 "import java.util.ArrayList;\n" +
                 "import java.util.List;", 0));
 
@@ -62,25 +68,40 @@ public class ParserGenerator {
                 "\t\t\treturn name;\n" +
                 "\t\t}\n" +
                 "\n" +
-                "\t\tStringBuilder treeToString(ArrayList<Boolean> mask) {\n" +
-                "\t\t\tStringBuilder sb = new StringBuilder();\n" +
-                "\t\t\tif (!mask.isEmpty()) {\n" +
-                "\t\t\t\tsb.append(\"|__\");\n" +
-                "\t\t\t}\n" +
-                "\t\t\tsb.append(\"'\").append(name).append(\"'\").append(\"\\n\");\n" +
-                "\t\t\tfor (int curChild = 0; curChild < children.size(); ++curChild) {\n" +
-                "\t\t\t\tfor (boolean b : mask) {\n" +
-                "\t\t\t\t\tif (b) {\n" +
-                "\t\t\t\t\t\tsb.append(\"|  \");\n" +
-                "\t\t\t\t\t} else {\n" +
-                "\t\t\t\t\t\tsb.append(\"   \");\n" +
-                "\t\t\t\t\t}\n" +
+                "\t\tvoid print(int testNumber) {\n" +
+                "\t\t\tfinal String outDir = System.getProperty(\"user.dir\") + File.separator + \"Parsed\";\n" +
+                "\t\t\tPath outputFile = Paths.get(outDir + File.separator + \"TreeParsed\" + testNumber + \".gv\");\n" +
+                "\t\t\tif (outputFile.getParent() != null) {\n" +
+                "\t\t\t\ttry {\n" +
+                "\t\t\t\t\tFiles.createDirectories(outputFile.getParent());\n" +
+                "\t\t\t\t} catch (IOException e) {\n" +
+                "\t\t\t\t\tSystem.out.println(\"Couldn't create output file path\");\n" +
+                "\t\t\t\t\treturn;\n" +
                 "\t\t\t\t}\n" +
-                "\t\t\t\tmask.add(curChild != children.size() - 1);\n" +
-                "\t\t\t\tsb.append(children.get(curChild).treeToString(mask));\n" +
-                "\t\t\t\tmask.remove(mask.size() - 1);\n" +
                 "\t\t\t}\n" +
-                "\t\t\treturn sb;\n" +
+                "\t\t\ttry (BufferedWriter writer = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8)) {\n" +
+                "\t\t\t\tfinal String fileStart = \"digraph HelloWorld {\";\n" +
+                "\t\t\t\tfinal String fileEnd = \"}\";\n\n" +
+                "\t\t\t\twriter.write(fileStart);\n" +
+                "\t\t\t\tprintNode(writer, 1, -1);\n" +
+                "\t\t\t\twriter.write(fileEnd);\n" +
+                "\t\t\t} catch (IOException e) {\n" +
+                "\t\t\t\tSystem.out.println(\"Unable to write to file: \" + e.getMessage());\n" +
+                "\t\t\t}\n" +
+                "\t\t}\n\n"+
+                "\t\tprivate int printNode(BufferedWriter writer, int curID, int parentID) throws IOException, IOException {\n"+
+                "\t\t\tfinal String startNode = Integer.toString(curID) + \"[label=\\\"\" + name + \"\\\"];\";\n\n" +
+                "\t\t\twriter.write(startNode);\n" +
+                "\t\t\tif (parentID != -1){\n" +
+                "\t\t\t\twriter.write(Integer.toString(parentID) + \" -> \" + Integer.toString(curID) + \";\");\n" +
+                "\t\t\t}\n" +
+                "\t\t\tint freeID = curID + 1;\n" +
+                "\t\t\tif (!children.isEmpty()) {\n" +
+                "\t\t\t\tfor (Node child : children) {\n" +
+                "\t\t\t\t\tfreeID = child.printNode(writer, freeID, curID);\n" +
+                "\t\t\t\t}\n" +
+                "\t\t\t}\n" +
+                "\t\t\treturn freeID;\n" +
                 "\t\t}\n"+
                 "\t}", 0));
 
@@ -91,14 +112,14 @@ public class ParserGenerator {
             sb.append("\n");
         }
 
-        sb.append(printString("private " + grammar.grammarName + "LexicalAnalyzer lexicalAnalyzer;", 1));
+        sb.append(printString("private " + grammar.grammarName + "Lex lex;", 1));
 
         sb.append("\n");
 
         // constructor
         sb.append(printString(
-                "\tpublic "+ grammar.grammarName +"Parser("+ grammar.grammarName +"LexicalAnalyzer lexicalAnalyzer) throws Exception {\n" +
-                "\t\tthis.lexicalAnalyzer = lexicalAnalyzer;\n" +
+                "\tpublic "+ grammar.grammarName +"Parser("+ grammar.grammarName +"Lex lex) throws Exception {\n" +
+                "\t\tthis.lex = lex;\n" +
                 "\t\tbuildTree();\n" +
                 "\t}", 0));
 
@@ -107,16 +128,16 @@ public class ParserGenerator {
         sb.append(printString("" +
                 "\tprivate void buildTree() throws Exception {\n" +
                 "\t\ttree = _" + grammar.startState + "();\n" +
-                "\t\tif (lexicalAnalyzer.getCurrentToken() != " + grammar.grammarName + "Token._END) {\n" +
-                "\t\t\tthrow new Exception(\"Cur token is \" + lexicalAnalyzer.getCurrentToken().toString() + \" but expected END.\");\n" +
+                "\t\tif (lex.getCurrentToken() != " + grammar.grammarName + "Token._END) {\n" +
+                "\t\t\tthrow new Exception(\"Cur token is \" + lex.getCurrentToken().toString() + \" but expected END.\");\n" +
                 "\t\t}\n" +
                 "\t}",0));
 
         sb.append("\n");
 
         sb.append(printString("" +
-                "\tpublic void printTree() {\n" +
-                "\t\tSystem.out.println(tree.treeToString(new ArrayList<>()));\n" +
+                "\tpublic void showTree(int ind) {\n" +
+                "\t\ttree.print(ind);\n" +
                 "\t}", 0));
 
         sb.append("\n");
@@ -133,7 +154,7 @@ public class ParserGenerator {
         // consume
         sb.append(printString("" +
                 "\tprivate void consume("+ grammar.grammarName +"Token token) throws Exception{\n" +
-                "\t\tif (lexicalAnalyzer.getCurrentToken() != token) {\n" +
+                "\t\tif (lex.getCurrentToken() != token) {\n" +
                 "\t\t\tthrow new Exception(\"Expected another token.\");\n" +
                 "\t\t}\n" +
                 "\t}", 0));
@@ -170,7 +191,7 @@ public class ParserGenerator {
 
         sb.append(printString("private Node_" + s.getName() + " _" + s.getName() + "(" + printParameters(s.getParameters()) + ") throws Exception {", 1));
         sb.append(printString("Node_" + s.getName() + " res = new Node_" + s.getName() + "();", 2));
-        sb.append(printString("switch (lexicalAnalyzer.getCurrentToken()) {", 2));
+        sb.append(printString("switch (lex.getCurrentToken()) {", 2));
 
         for (Rule rule : s.rules) {
             sb.append(printRule(rule, s));
@@ -233,11 +254,11 @@ public class ParserGenerator {
         int index = 0;
         for (int i = 0; i < rule.items.size(); ++i) {
             String item = rule.items.get(i);
-            if (grammar.tokenItems.containsKey(item)) {
+            if (grammar.tokenHolders.containsKey(item)) {
                 sb.append(printString("consume(" + grammar.grammarName + "Token." + item +");", 4));
                 sb.append(printString("res.addChild(new Node(\"" + item + "\"));" , 4));
                 sb.append(printString(rule.actions.get(i), 4));
-                sb.append(printString("lexicalAnalyzer.getNextToken();", 4));
+                sb.append(printString("lex.getNextToken();", 4));
             } else if (grammar.states.containsKey(item)) {
                 sb.append(printString("Node_" + item + " n" + index + " = _" + item + "(" + rule.parameters.get(i) + ");", 4));
                 sb.append(printString("res.addChild(n" + index +");", 4));

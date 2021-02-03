@@ -1,16 +1,16 @@
 package generator;
 
-import generator.subclasses.*;
+import generator.atoms.*;
 
 import java.util.*;
 
 public class Grammar {
     String grammarName;
     String startState;
-    Map<String, TokenItem> tokenItems = new HashMap<>();
+    Map<String, TokensHolder> tokenHolders = new HashMap<>();
     Map<String, State> states = new HashMap<>();
-    List<TokenItem> tokens = new ArrayList<>();
-    List<TokenItem> skipTokens = new ArrayList<>();
+    List<TokensHolder> tokens = new ArrayList<>();
+    List<TokensHolder> skipTokens = new ArrayList<>();
     List<String> imports = new ArrayList<>();
 
     public void addImport(String s) {
@@ -26,35 +26,23 @@ public class Grammar {
     }
 
     public void addToken(String tokenName, String pattern) {
-        TokenItem item = new TokenItem(tokenName, pattern);
+        TokensHolder item = new TokensHolder(tokenName, pattern);
         tokens.add(item);
-        if (tokenItems.containsKey(tokenName)) {
-            System.err.println("Duplicate token name.");
+        if (tokenHolders.containsKey(tokenName)) {
+            System.err.println("Token with such name already exist");
             System.exit(-1);
         }
-        tokenItems.put(tokenName, item);
+        tokenHolders.put(tokenName, item);
     }
 
     public void addSkipToken(String tokenName, String pattern) {
-        TokenItem item = new TokenItem(tokenName, pattern);
+        TokensHolder item = new TokensHolder(tokenName, pattern);
         skipTokens.add(item);
-        if (tokenItems.containsKey(tokenName)) {
-            System.err.println("Duplicate token name.");
+        if (tokenHolders.containsKey(tokenName)) {
+            System.err.println("Token with such name already exist");
             System.exit(-1);
         }
-        tokenItems.put(tokenName, item);
-    }
-
-    public void showTokens() {
-        System.out.println(grammarName);
-        System.out.println("TOKENS");
-        for (TokenItem item : tokens) {
-            System.out.printf("Key: %s  Value: %s \n", item.name, item.pattern);
-        }
-        System.out.println("SKIP TOKENS");
-        for (TokenItem item : skipTokens) {
-            System.out.printf("Key: %s  Value: %s \n", item.name, item.pattern);
-        }
+        tokenHolders.put(tokenName, item);
     }
 
     public void addState(State s) {
@@ -72,7 +60,7 @@ public class Grammar {
                             if (state.addToFirst(item)) {
                                 changed = true;
                             }
-                        } else if (tokenItems.containsKey(item)) {
+                        } else if (tokenHolders.containsKey(item)) {
                             if (state.addToFirst(item)) {
                                 changed = true;
                             }
@@ -97,13 +85,6 @@ public class Grammar {
         }
     }
 
-    void showFirst() {
-        System.out.println("---FIRST---");
-        for (State state : states.values()) {
-            System.out.println(state.getName() + " : " + state.getFirst().toString());
-        }
-    }
-
     void constructFollow() {
         State start = states.get(startState);
         start.addToFollow("_END");
@@ -120,7 +101,7 @@ public class Grammar {
                             curGammaFirst.add("EPS");
                             continue;
                         }
-                        if (tokenItems.containsKey(item)) {
+                        if (tokenHolders.containsKey(item)) {
                             curGammaFirst.clear();
                             curGammaFirst.add(item);
                             continue;
@@ -142,7 +123,7 @@ public class Grammar {
                                 }
                             }
                             if (!st.hasEpsilon()) {
-                              curGammaFirst.clear();
+                                curGammaFirst.clear();
                             }
                             curGammaFirst.addAll(st.getFirst());
                         } else {
@@ -155,19 +136,12 @@ public class Grammar {
         }
     }
 
-    void showFollow() {
-        System.out.println("---FOLLOW---");
-        for (State state : states.values()) {
-            System.out.println(state.getName() + " : " + state.getFollow().toString());
-        }
-    }
-
     HashSet<String> firstForRule(Rule r) {
         HashSet<String> first = new HashSet<>();
         for (String item : r.items) {
             if (item.equals("EPS")) {
                 first.add("EPS");
-            } else if (tokenItems.containsKey(item)) {
+            } else if (tokenHolders.containsKey(item)) {
                 first.add(item);
                 break;
             } else if (states.containsKey(item)) {
@@ -179,4 +153,30 @@ public class Grammar {
         }
         return first;
     }
+
+    /*public void showTokens() {
+        System.out.println(grammarName);
+        System.out.println("TOKENS");
+        for (TokensHolder item : tokens) {
+            System.out.printf("Key: %s  Value: %s \n", item.name, item.pattern);
+        }
+        System.out.println("SKIP TOKENS");
+        for (TokensHolder item : skipTokens) {
+            System.out.printf("Key: %s  Value: %s \n", item.name, item.pattern);
+        }
+    }*/
+
+    /*void showFirst() {
+        System.out.println("---FIRST---");
+        for (State state : states.values()) {
+            System.out.println(state.getName() + " : " + state.getFirst().toString());
+        }
+    }*/
+
+    /*void showFollow() {
+        System.out.println("---FOLLOW---");
+        for (State state : states.values()) {
+            System.out.println(state.getName() + " : " + state.getFollow().toString());
+        }
+    }*/
 }
